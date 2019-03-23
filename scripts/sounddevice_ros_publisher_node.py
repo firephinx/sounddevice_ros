@@ -36,6 +36,8 @@ parser.add_argument(
     help='audio file to store recording to')
 parser.add_argument(
     '-t', '--subtype', type=str, help='sound file subtype (e.g. "PCM_24")')
+parser.add_argument(
+    '-s', '--save_file', type=bool, default=False, help='flag to save to audio file')
 args = parser.parse_args()
 
 try:
@@ -53,9 +55,10 @@ try:
         device_info = sd.query_devices(args.device, 'input')
         # soundfile expects an int, sounddevice provides a float:
         args.samplerate = int(device_info['default_samplerate'])
-    if args.filename is None:
-        args.filename = tempfile.mktemp(prefix='delme_rec_unlimited_',
-                                        suffix='.wav', dir='')
+    if args.save_file:
+        if args.filename is None:
+            args.filename = tempfile.mktemp(prefix='delme_rec_unlimited_',
+                                            suffix='.wav', dir='')
     q = queue.Queue()
     audio_info_pub = rospy.Publisher('/audio_info', AudioInfo, queue_size=10)
     audio_pub = rospy.Publisher('/audio', AudioData, queue_size=10)
@@ -67,15 +70,32 @@ try:
             print(status, file=sys.stderr)
         q.put(indata.copy())
 
-    # Make sure the file is opened before recording anything:
-    with sf.SoundFile(args.filename, mode='x', samplerate=args.samplerate,
-                      channels=args.channels, subtype=args.subtype) as file:
-        with sd.InputStream(samplerate=args.samplerate, device=args.device,
-                            channels=args.channels, callback=callback):
+    if args.save_file:
+        # Make sure the file is opened before recording anything:
+        with sf.SoundFile(args.filename, mode='x', samplerate=args.samplerate,
+                          channels=args.channels, subtype=args.subtype) as file:
+            with sd.InputStream(samplerate=args.samplerate, device=args.device,
+                                channels=args.channels, callback=callback):
 
+                while not rospy.is_shutdown():
+                    audio_data = q.get()
+                    file.write(audio_data)
+                    ai = AudioInfo()
+                    ai.header.stamp = rospy.Time.now()
+                    ai.num_channels = args.channels
+                    ai.sample_rate = args.samplerate
+                    if args.subtype is not None:
+                        ai.subtype = args.subtype
+                    audio_info_pub.publish(ai)
+                    ad = AudioData()
+                    ad.header.stamp = rospy.Time.now()
+                    ad.data = audio_data.flatten()
+                    audio_pub.publish(ad)
+    else:
+        with sd.InputStream(samplerate=args.samplerate, device=args.device,
+                                channels=args.channels, callback=callback):
             while not rospy.is_shutdown():
                 audio_data = q.get()
-                file.write(audio_data)
                 ai = AudioInfo()
                 ai.header.stamp = rospy.Time.now()
                 ai.num_channels = args.channels
