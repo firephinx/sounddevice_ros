@@ -38,7 +38,7 @@ try:
     sample_rate = audio_info_msg.sample_rate
     num_channels = audio_info_msg.num_channels
     subtype = args.subtype
-    if not audio_info_msg.subtype:
+    if audio_info_msg.subtype:
         subtype = audio_info_msg.subtype
 
     # Make sure the file is opened before recording anything:
