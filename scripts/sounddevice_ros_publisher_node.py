@@ -9,8 +9,11 @@ PySoundFile (https://github.com/bastibe/PySoundFile/) has to be installed!
 """
 import argparse
 import tempfile
-from Queue import Queue
 import sys
+if sys.version_info[0] < 3:
+    from Queue import Queue
+else:
+    from queue import Queue
 
 def int_or_str(text):
     """Helper function for argument parsing."""
