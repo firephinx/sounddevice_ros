@@ -9,7 +9,11 @@ PySoundFile (https://github.com/bastibe/PySoundFile/) has to be installed!
 """
 import argparse
 import tempfile
-import queue
+import sys
+if sys.version_info[0] < 3:
+    from multiprocessing import Queue
+else:
+    from queue import Queue
 import sys
 
 
@@ -59,7 +63,7 @@ try:
         if args.filename is None:
             args.filename = tempfile.mktemp(prefix='delme_rec_unlimited_',
                                             suffix='.wav', dir='')
-    q = queue.Queue()
+    q = Queue()
     audio_info_pub = rospy.Publisher('/audio_info', AudioInfo, queue_size=10)
     audio_pub = rospy.Publisher('/audio', AudioData, queue_size=10)
     rospy.init_node('sounddevice_ros_publisher')
