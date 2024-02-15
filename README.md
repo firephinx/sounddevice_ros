@@ -4,13 +4,13 @@ This ROS Catkin package is a wrapper around the sounddevice python package locat
 
 ## Installation Instructions
 
-1. Install sounddevice:
+1. Install sounddevice and soundfile:
     ```bash
-    pip install sounddevice --user
+    pip install sounddevice pysoundfile
     ```
-2. Install soundfile:
+2. Install PortAudio and ASound:
     ```bash
-    pip install pysoundfile --user
+    sudo apt-get install libportaudio2 libasound-dev
     ```
 3. Clone this repository into your catkin_ws/src folder:
     ```bash
