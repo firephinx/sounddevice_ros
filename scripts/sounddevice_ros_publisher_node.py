@@ -40,6 +40,8 @@ parser.add_argument(
     '-t', '--subtype', type=str, help='sound file subtype (e.g. "PCM_24")')
 parser.add_argument(
     '-s', '--save_file', type=bool, default=False, help='flag to save to audio file')
+parser.add_argument(
+    '-n', '--num', type=str, help='audio number')
 args = parser.parse_args()
 
 try:
@@ -61,10 +63,13 @@ try:
         if args.filename is None:
             args.filename = tempfile.mktemp(prefix='delme_rec_unlimited_',
                                             suffix='.wav', dir='')
+    if args.num is None:
+        args.num = ''
+        
     q = Queue()
-    audio_info_pub = rospy.Publisher('/audio_info', AudioInfo, queue_size=10)
-    audio_pub = rospy.Publisher('/audio', AudioData, queue_size=10)
-    rospy.init_node('sounddevice_ros_publisher')
+    audio_info_pub = rospy.Publisher('/audio'+args.num+'_info', AudioInfo, queue_size=10)
+    audio_pub = rospy.Publisher('/audio'+args.num, AudioData, queue_size=10)
+    rospy.init_node('sounddevice_ros_publisher'+args.num)
 
     def callback(indata, frames, time, status):
         """This is called (from a separate thread) for each audio block."""

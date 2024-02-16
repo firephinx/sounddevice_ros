@@ -17,6 +17,8 @@ parser.add_argument(
     help='audio file to store recording to')
 parser.add_argument(
     '-t', '--subtype', type=str, help='sound file subtype (e.g. "PCM_24")')
+parser.add_argument(
+    '-n', '--num', type=str, help='audio number')
 args = parser.parse_args()
 
 try:
@@ -30,10 +32,12 @@ try:
     if args.filename is None:
         args.filename = tempfile.mktemp(prefix='delme_rec_unlimited_',
                                         suffix='.wav', dir='')
+    if args.num is None:
+        args.num = ''
     
-    rospy.init_node('sounddevice_ros_subscriber')
+    rospy.init_node('sounddevice_ros_subscriber'+args.num)
 
-    audio_info_msg = rospy.wait_for_message('/audio_info', AudioInfo)
+    audio_info_msg = rospy.wait_for_message('/audio'+args.num+'_info', AudioInfo)
     
     sample_rate = audio_info_msg.sample_rate
     num_channels = audio_info_msg.num_channels
@@ -48,7 +52,7 @@ try:
         def callback(msg):
             file.write(numpy.asarray(msg.data).reshape((-1,num_channels)))
 
-        audio_sub = rospy.Subscriber('/audio', AudioData, callback)
+        audio_sub = rospy.Subscriber('/audio'+args.num, AudioData, callback)
 
         rospy.spin()
 
