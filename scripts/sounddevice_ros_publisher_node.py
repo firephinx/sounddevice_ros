@@ -42,7 +42,7 @@ parser.add_argument(
     '-s', '--save_file', type=bool, default=False, help='flag to save to audio file')
 parser.add_argument(
     '-n', '--num', type=str, help='audio number')
-args = parser.parse_args()
+args, unknown = parser.parse_known_args()
 
 try:
     import rospy
