@@ -67,9 +67,12 @@ try:
         args.num = ''
         
     q = Queue()
-    audio_info_pub = rospy.Publisher('/audio'+args.num+'_info', AudioInfo, queue_size=10)
-    audio_pub = rospy.Publisher('/audio'+args.num, AudioData, queue_size=10)
     rospy.init_node('sounddevice_ros_publisher'+args.num)
+    namespace = rospy.get_namespace()
+
+    audio_info_pub = rospy.Publisher(namespace + 'audio'+args.num+'_info', AudioInfo, queue_size=10)
+    audio_pub = rospy.Publisher(namespace + 'audio'+args.num, AudioData, queue_size=10)
+    
 
     def callback(indata, frames, time, status):
         """This is called (from a separate thread) for each audio block."""
